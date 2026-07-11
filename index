@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warsztat - Przerwa Techniczna</title>
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --primary-hover: #2c5282;
+            --bg: #f7fafc;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h2 { margin-top: 0; color: var(--primary); }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #718096;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        .content { display: none; }
+        .content.active { display: block; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px; /* Zapobiega zoomowaniu na iOS */
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: var(--primary-hover); }
+        .btn-download {
+            background-color: #2f855a;
+            margin-bottom: 15px;
+        }
+        .btn-download:hover { background-color: #22543d; }
+        .btn-clear {
+            background-color: #9b2c2c;
+            margin-top: 20px;
+            padding: 8px;
+            font-size: 14px;
+        }
+        .btn-clear:hover { background-color: #742a2a; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        th { background-color: #edf2f7; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('pobieranie')">Pobieranie części</div>
+        <div class="tab" onclick="switchTab('zestawienie')">Zestawienie dzienne</div>
+    </div>
+
+    <!-- ZAKŁADKA 1: FORMULARZ -->
+    <div id="pobieranie" class="content active">
+        <h2>Dodaj pobraną część</h2>
+        <form id="partsForm" onsubmit="addPart(event)">
+            <div class="form-group">
+                <label for="name">Nazwa części</label>
+                <input type="text" id="name" required placeholder="np. Stycznik, Czujnik">
+            </div>
+            <div class="form-group">
+                <label for="model">Model / Typ</label>
+                <input type="text" id="model" placeholder="np. AZM300, 24V DC">
+            </div>
+            <div class="form-group">
+                <label for="qty">Ilość</label>
+                <input type="number" id="qty" required min="1" value="1">
+            </div>
+            <button type="submit">Dodaj do listy</button>
+        </form>
+    </div>
+
+    <!-- ZAKŁADKA 2: ZESTAWIENIE -->
+    <div id="zestawienie" class="content">
+        <h2>Zestawienie dzienne</h2>
+        <button class="btn-download" onclick="downloadTxt()">Pobierz jako .TXT</button>
+        
+        <table id="partsTable">
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Model</th>
+                    <th>Ilość</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Tutaj wpadną wiersze z JS -->
+            </tbody>
+        </table>
+
+        <button class="btn-clear" onclick="clearData()">Wyczyść całą listę</button>
+    </div>
+</div>
+
+<script>
+    // Ładowanie danych z localStorage lub utworzenie pustej tablicy
+    let partsList = JSON.parse(localStorage.getItem('partsList')) || [];
+
+    // Przełączanie zakładek
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+        
+        if(tabId === 'pobieranie') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            renderTable();
+        }
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // Dodawanie elementu do listy
+    function addPart(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('name').value.trim();
+        const model = document.getElementById('model').value.trim() || '-';
+        const qty = document.getElementById('qty').value;
+
+        partsList.push({ name, model, qty });
+        localStorage.setItem('partsList', JSON.stringify(partsList));
+
+        // Reset formularza
+        document.getElementById('partsForm').reset();
+        document.getElementById('qty').value = 1;
+        
+        alert('Dodano do zestawienia!');
+    }
+
+    // Odświeżanie tabeli w drugiej zakładce
+    function renderTable() {
+        const tbody = document.querySelector('#partsTable tbody');
+        tbody.innerHTML = '';
+
+        if(partsList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Brak pobranych części</td></tr>';
+            return;
+        }
+
+        partsList.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${item.name}</td><td>${item.model}</td><td>${item.qty} szt.</td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Generowanie i pobieranie pliku TXT
+    function downloadTxt() {
+        if(partsList.length === 0) {
+            alert('Lista jest pusta, nie mam co pobrać.');
+            return;
+        }
+
+        const date = new Date().toLocaleDateString('pl-PL');
+        let textContent = `ZESTAWIENIE POBRANYCH CZĘŚCI - DNIA: ${date}\n`;
+        textContent += `===========================================\n\n`;
+
+        partsList.forEach((item, index) => {
+            textContent += `${index + 1}. Nazwa: ${item.name} | Model: ${item.model} | Ilość: ${item.qty} szt.\n`;
+        });
+
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `zestawienie_czesci_${date.replace(/\./g, '_')}.txt`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    // Czyszczenie danych po skończonym dniu/pracy
+    function clearData() {
+        if(confirm('Czy na pewno chcesz wyczyścić całe dzisiejsze zestawienie?')) {
+            partsList = [];
+            localStorage.removeItem('partsList');
+            renderTable();
+        }
+    }
+</script>
+
+</body>
+</html>
