@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pobieranie Części</title>
+    <title>Rejestr Prac i Części</title>
     <style>
         :root {
             --primary: #2b6cb0;
@@ -12,6 +12,7 @@
             --card-bg: #ffffff;
             --text: #1a202c;
             --border: #cbd5e0;
+            --accent: #2b6cb0;
         }
         * {
             box-sizing: border-box;
@@ -67,33 +68,49 @@
             font-size: 18px; 
             color: var(--primary); 
         }
+        h3 {
+            font-size: 15px;
+            margin: 15px 0 10px 0;
+            color: #4a5568;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14px;
         }
-        input {
+        input, textarea {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             border: 2px solid var(--border);
             border-radius: 8px;
             font-size: 16px;
             background: #f8fafc;
+            font-family: inherit;
         }
-        input:focus {
+        input:focus, textarea:focus {
             border-color: var(--primary);
             outline: none;
             background: #fff;
         }
         
+        .part-row {
+            background: #f7fafc;
+            border: 1px dashed var(--border);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
         button {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background-color: var(--primary);
             color: white;
             border: none;
@@ -104,137 +121,125 @@
         }
         button:active { filter: brightness(0.9); }
         
-        .btn-download {
-            background-color: #2f855a;
-            margin-bottom: 15px;
-        }
-        .btn-clear {
-            background-color: #e53e3e;
-            margin-top: 25px;
-            padding: 10px;
-            font-size: 14px;
-        }
+        .btn-download { background-color: #2f855a; margin-bottom: 15px; }
+        .btn-clear { background-color: #e53e3e; margin-top: 25px; padding: 10px; font-size: 14px; }
 
-        /* Kafelki i akcje */
-        .part-item {
-            background: #f7fafc;
+        /* Widok wpisów na telefonie */
+        .job-card {
+            background: #f8fafc;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
-        .part-header {
-            display: flex;
-            justify-content: space-between;
+        .job-title {
             font-weight: bold;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 6px;
-            margin-bottom: 6px;
             font-size: 16px;
-        }
-        .part-model {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-        .qty-badge {
-            background: #e2e8f0;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .card-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .btn-inline {
-            padding: 8px;
-            font-size: 13px;
-            background-color: #718096;
-        }
-        .btn-inline-save {
-            background-color: #2f855a;
-        }
-        
-        .edit-form input {
-            padding: 8px;
-            font-size: 15px;
+            color: #2d3748;
             margin-bottom: 8px;
         }
-
-        .empty-message {
-            text-align: center;
-            color: #718096;
-            padding: 30px 0;
+        .job-parts-list {
+            margin-top: 8px;
+            padding-left: 0;
+            list-style: none;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid #edf2f7;
         }
-
-        /* Nowe automatyczne powiadomienie na dole ekranu */
-        .toast {
-            position: fixed;
-            bottom: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2d3748;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 30px;
+        .job-parts-list li {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            justify-content: space-between;
+        }
+        .job-parts-list li:last-child { border-bottom: none; }
+        
+        /* Sekcja sumowania */
+        .summary-box {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 20px;
+        }
+        .summary-title {
             font-weight: bold;
+            color: #2b6cb0;
+            margin-bottom: 8px;
             font-size: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: bottom 0.3s ease;
-            z-index: 9999;
-            white-space: nowrap;
         }
-        .toast.show {
-            bottom: 30px;
+        
+        .card-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-inline { padding: 8px; font-size: 13px; background-color: #718096; }
+        .btn-inline-save { background-color: #2f855a; }
+        .edit-form input { padding: 8px; font-size: 15px; margin-bottom: 8px; }
+
+        .empty-message { text-align: center; color: #718096; padding: 30px 0; }
+
+        .toast {
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%);
+            background: #2d3748; color: #fff; padding: 12px 24px; border-radius: 30px;
+            font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: bottom 0.3s ease; z-index: 9999; white-space: nowrap;
         }
+        .toast.show { bottom: 30px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('pobieranie')">Pobieranie części</div>
+        <div class="tab active" onclick="switchTab('pobieranie')">Dodaj wpis</div>
         <div class="tab" onclick="switchTab('zestawienie')">Zestawienie</div>
     </div>
 
     <!-- ZAKŁADKA 1: FORMULARZ -->
     <div id="pobieranie" class="content active">
-        <h2>Dodaj pobraną część</h2>
-        <form id="partsForm" onsubmit="addPart(event)">
+        <h2>Rejestracja prac</h2>
+        <form id="mainForm" onsubmit="addJob(event)">
             <div class="form-group">
-                <label for="name">Nazwa części</label>
-                <input type="text" id="name" required placeholder="np. Stycznik, Czujnik">
+                <label for="machine">Maszyna / Wykonane prace</label>
+                <textarea id="machine" rows="2" required placeholder="np. Pakowaczka - wymiana blokady, czyszczenie"></textarea>
             </div>
-            <div class="form-group">
-                <label for="model">Model / Typ</label>
-                <input type="text" id="model" placeholder="np. AZM300, 24V DC">
+            
+            <h3>Użyte części (opcjonalnie)</h3>
+            <div class="part-row">
+                <div class="form-group">
+                    <label for="partName">Nazwa części</label>
+                    <input type="text" id="partName" placeholder="np. Stycznik, Blokada bezpieczeństwa">
+                </div>
+                <div class="form-group">
+                    <label for="partModel">Model / Typ</label>
+                    <input type="text" id="partModel" placeholder="np. AZM300, 24V DC">
+                </div>
+                <div class="form-group">
+                    <label for="partQty">Ilość</label>
+                    <input type="number" id="partQty" min="1" value="1" inputmode="numeric">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="qty">Ilość</label>
-                <input type="number" id="qty" required min="1" value="1" inputmode="numeric">
-            </div>
-            <button type="submit">Dodaj do listy</button>
+            
+            <button type="submit">Zapisz pracę i części</button>
         </form>
     </div>
 
     <!-- ZAKŁADKA 2: ZESTAWIENIE -->
     <div id="zestawienie" class="content">
-        <h2>Zestawienie dzienne</h2>
+        <h2>Dzienne zestawienie prac</h2>
         <button class="btn-download" onclick="downloadTxt()">Pobierz jako .TXT</button>
         
-        <div id="partsListContainer"></div>
+        <div id="jobsContainer"></div>
+        <div id="totalsContainer"></div>
 
-        <button class="btn-clear" onclick="clearData()">Wyczyść całą listę</button>
+        <button class="btn-clear" onclick="clearData()">Wyczyść całą bazę</button>
     </div>
 </div>
 
-<!-- Element powiadomienia -->
-<div id="toast" class="toast">Dodano pomyślnie!</div>
+<div id="toast" class="toast">Zapisano pomyślnie!</div>
 
 <script>
-    let partsList = JSON.parse(localStorage.getItem('partsList')) || [];
+    let jobsList = JSON.parse(localStorage.getItem('jobsList')) || [];
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -244,131 +249,205 @@
             document.querySelectorAll('.tab')[0].classList.add('active');
         } else {
             document.querySelectorAll('.tab')[1].classList.add('active');
-            renderList();
+            renderJobs();
         }
         document.getElementById(tabId).classList.add('active');
     }
 
-    // Funkcja wywołująca automatyczne powiadomienie
     function showToast() {
         const toast = document.getElementById('toast');
         toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2000); // Zniknie równo po 2 sekundach (2000 ms)
+        setTimeout(() => { toast.classList.remove('show'); }, 2000);
     }
 
-    function addPart(event) {
+    function addJob(event) {
         event.preventDefault();
         
-        const name = document.getElementById('name').value.trim();
-        const model = document.getElementById('model').value.trim() || '-';
-        const qty = document.getElementById('qty').value;
+        const machine = document.getElementById('machine').value.trim();
+        const partName = document.getElementById('partName').value.trim();
+        const partModel = document.getElementById('partModel').value.trim() || '-';
+        const partQty = parseInt(document.getElementById('partQty').value) || 0;
 
-        partsList.push({ name, model, qty });
-        localStorage.setItem('partsList', JSON.stringify(partsList));
+        let parts = [];
+        if (partName) {
+            parts.push({ name: partName, model: partModel, qty: partQty });
+        }
 
-        document.getElementById('partsForm').reset();
-        document.getElementById('qty').value = 1;
+        jobsList.push({ machine, parts });
+        localStorage.setItem('jobsList', JSON.stringify(jobsList));
+
+        document.getElementById('mainForm').reset();
+        document.getElementById('partQty').value = 1;
         
-        showToast(); // Zamiast alert() odpalamy dymek
+        showToast();
     }
 
-    function renderList() {
-        const container = document.getElementById('partsListContainer');
-        container.innerHTML = '';
+    // Wyliczanie sumarycznych wartości wszystkich części
+    function calculateTotals() {
+        let totals = {};
+        jobsList.forEach(job => {
+            job.parts.forEach(p => {
+                // Klucz unikalny łączący nazwę i model
+                const key = `${p.name.toLowerCase()}|||${p.model.toLowerCase()}`;
+                if (totals[key]) {
+                    totals[key].qty += parseInt(p.qty);
+                } else {
+                    totals[key] = { name: p.name, model: p.model, qty: parseInt(p.qty) };
+                }
+            });
+        });
+        return Object.values(totals);
+    }
 
-        if(partsList.length === 0) {
-            container.innerHTML = '<div class="empty-message">Brak pobranych części</div>';
+    function renderJobs() {
+        const container = document.getElementById('jobsContainer');
+        const totalsContainer = document.getElementById('totalsContainer');
+        container.innerHTML = '';
+        totalsContainer.innerHTML = '';
+
+        if(jobsList.length === 0) {
+            container.innerHTML = '<div class="empty-message">Brak zarejestrowanych prac</div>';
             return;
         }
 
-        partsList.forEach((item, index) => {
+        // Renderowanie kart prac per maszyna
+        jobsList.forEach((job, index) => {
             const div = document.createElement('div');
-            div.className = 'part-item';
-            div.id = `item-${index}`;
+            div.className = 'job-card';
+            div.id = `job-${index}`;
             
+            let partsHtml = '';
+            if(job.parts.length > 0) {
+                partsHtml = '<ul class="job-parts-list">';
+                job.parts.forEach(p => {
+                    partsHtml += `<li><span>${p.name} (${p.model})</span><strong>${p.qty} szt.</strong></li>`;
+                });
+                partsHtml += '</ul>';
+            } else {
+                partsHtml = '<div style="font-size:13px; color:#a0aec0; margin-top:5px;">Brak zużytych części</div>';
+            }
+
             div.innerHTML = `
-                <div class="part-header">
-                    <span>${item.name}</span>
-                    <span class="qty-badge">${item.qty} szt.</span>
-                </div>
-                <div class="part-model">Model: ${item.model}</div>
+                <div class="job-title">${job.machine}</div>
+                ${partsHtml}
                 <div class="card-actions">
-                    <button class="btn-inline" onclick="showEditForm(${index})">Edytuj</button>
+                    <button class="btn-inline" onclick="showEditJobForm(${index})">Edytuj</button>
                 </div>
             `;
             container.appendChild(div);
         });
+
+        // Renderowanie automatycznej sumy wszystkich powtarzających się części
+        const totals = calculateTotals();
+        if(totals.length > 0) {
+            let totalsHtml = `
+                <div class="summary-box">
+                    <div class="summary-title">ŁĄCZNIE ZUŻYTE CZĘŚCI (SUMA):</div>
+                    <ul class="job-parts-list" style="margin-bottom:0;">
+            `;
+            totals.forEach(t => {
+                totalsHtml += `<li><span>${t.name} (${t.model})</span><strong>${t.qty} szt.</strong></li>`;
+            });
+            totalsHtml += '</ul></div>';
+            totalsContainer.innerHTML = totalsHtml;
+        }
     }
 
-    function showEditForm(index) {
-        const item = partsList[index];
-        const div = document.getElementById(`item-${index}`);
+    function showEditJobForm(index) {
+        const job = jobsList[index];
+        const div = document.getElementById(`job-${index}`);
+        const part = job.parts[0] || { name: '', model: '', qty: 1 };
         
         div.innerHTML = `
             <div class="edit-form">
-                <label style="font-size: 13px;">Nazwa</label>
-                <input type="text" id="edit-name-${index}" value="${item.name}" required>
+                <label style="font-size: 13px;">Maszyna / Prace</label>
+                <input type="text" id="edit-machine-${index}" value="${job.machine}" required>
+                
+                <label style="font-size: 13px;">Część (Nazwa)</label>
+                <input type="text" id="edit-pname-${index}" value="${part.name}">
                 
                 <label style="font-size: 13px;">Model</label>
-                <input type="text" id="edit-model-${index}" value="${item.model === '-' ? '' : item.model}">
+                <input type="text" id="edit-pmodel-${index}" value="${part.model === '-' ? '' : part.model}">
                 
                 <label style="font-size: 13px;">Ilość</label>
-                <input type="number" id="edit-qty-${index}" value="${item.qty}" min="1" inputmode="numeric" required>
+                <input type="number" id="edit-pqty-${index}" value="${part.qty}" min="0" inputmode="numeric">
                 
                 <div class="card-actions">
-                    <button class="btn-inline btn-inline-save" onclick="saveEdit(${index})">Zapisz</button>
-                    <button class="btn-inline" style="background-color: #a0aec0;" onclick="renderList()">Anuluj</button>
+                    <button class="btn-inline btn-inline-save" onclick="saveJobEdit(${index})">Zapisz</button>
+                    <button class="btn-inline" style="background-color: #a0aec0;" onclick="renderJobs()">Anuluj</button>
                 </div>
             </div>
         `;
     }
 
-    function saveEdit(index) {
-        const newName = document.getElementById(`edit-name-${index}`).value.trim();
-        const newModel = document.getElementById(`edit-model-${index}`).value.trim() || '-';
-        const newQty = document.getElementById(`edit-qty-${index}`).value;
+    function saveJobEdit(index) {
+        const machine = document.getElementById(`edit-machine-${index}`).value.trim();
+        const pName = document.getElementById(`edit-pname-${index}`).value.trim();
+        const pModel = document.getElementById(`edit-pmodel-${index}`).value.trim() || '-';
+        const pQty = parseInt(document.getElementById(`edit-pqty-${index}`).value) || 0;
 
-        if(!newName || !newQty) {
-            alert('Nazwa i ilość są wymagane!');
+        if(!machine) {
+            alert('Opis maszyny/prac jest wymagany!');
             return;
         }
 
-        partsList[index] = { name: newName, model: newModel, qty: newQty };
-        localStorage.setItem('partsList', JSON.stringify(partsList));
+        let parts = [];
+        if(pName && pQty > 0) {
+            parts.push({ name: pName, model: pModel, qty: pQty });
+        }
+
+        jobsList[index] = { machine, parts };
+        localStorage.setItem('jobsList', JSON.stringify(jobsList));
         
-        renderList();
+        renderJobs();
     }
 
     function downloadTxt() {
-        if(partsList.length === 0) {
+        if(jobsList.length === 0) {
             alert('Lista jest pusta.');
             return;
         }
 
         const date = new Date().toLocaleDateString('pl-PL');
-        let textContent = `ZESTAWIENIE POBRANYCH CZĘŚCI - DNIA: ${date}\n`;
+        let textContent = `ZESTAWIENIE ROBOCZE - DNIA: ${date}\n`;
         textContent += `===========================================\n\n`;
 
-        partsList.forEach((item, index) => {
-            textContent += `${index + 1}. Nazwa: ${item.name} | Model: ${item.model} | Ilość: ${item.qty} szt.\n`;
+        textContent += `SZCZEGÓŁOWY REJESTR PRAC:\n`;
+        jobsList.forEach((job, index) => {
+            textContent += `${index + 1}. Maszyna/Prace: ${job.machine}\n`;
+            if(job.parts.length > 0) {
+                job.parts.forEach(p => {
+                    textContent += `   -> Część: ${p.name} | Model: ${p.model} | Ilość: ${p.qty} szt.\n`;
+                });
+            } else {
+                textContent += `   -> Zużycie części: brak\n`;
+            }
+            textContent += `-------------------------------------------\n`;
         });
+
+        const totals = calculateTotals();
+        if(totals.length > 0) {
+            textContent += `\n===========================================\n`;
+            textContent += `ZBIORCZA LISTA ZUŻYTYCH CZĘŚCI (SUMA):\n`;
+            textContent += `===========================================\n`;
+            totals.forEach(t => {
+                textContent += `• ${t.name} (Model: ${t.model}) -> ŁĄCZNIE: ${t.qty} szt.\n`;
+            });
+        }
 
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `zestawienie_${date.replace(/\./g, '_')}.txt`;
+        link.download = `zestawienie_prac_${date.replace(/\./g, '_')}.txt`;
         link.click();
         URL.revokeObjectURL(link.href);
     }
 
     function clearData() {
-        if(confirm('Wyczyścić całą listę?')) {
-            partsList = [];
-            localStorage.removeItem('partsList');
-            renderList();
+        if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr prac i części?')) {
+            jobsList = [];
+            localStorage.removeItem('jobsList');
+            renderJobs();
         }
     }
 </script>
