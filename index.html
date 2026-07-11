@@ -12,7 +12,6 @@
             --card-bg: #ffffff;
             --text: #1a202c;
             --border: #cbd5e0;
-            --accent: #2b6cb0;
         }
         * {
             box-sizing: border-box;
@@ -78,6 +77,7 @@
         
         .form-group {
             margin-bottom: 12px;
+            position: relative;
         }
         label {
             display: block;
@@ -99,6 +99,49 @@
             outline: none;
             background: #fff;
         }
+
+        /* Styl Akordeonu z historią maszyn */
+        .history-accordion {
+            margin-top: 5px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #f7fafc;
+            overflow: hidden;
+        }
+        .history-header {
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
+            background: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .history-list {
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .history-list.open {
+            display: block;
+        }
+        .history-item {
+            padding: 10px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #edf2f7;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-item:active {
+            background: #edf2f7;
+        }
+        .history-item:last-child { border-bottom: none; }
         
         .part-row {
             background: #f7fafc;
@@ -124,14 +167,12 @@
         .btn-download { background-color: #2f855a; margin-bottom: 15px; }
         .btn-clear { background-color: #e53e3e; margin-top: 25px; padding: 10px; font-size: 14px; }
 
-        /* Widok wpisów na telefonie */
         .job-card {
             background: #f8fafc;
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 14px;
             margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .job-title {
             font-weight: bold;
@@ -156,7 +197,6 @@
         }
         .job-parts-list li:last-child { border-bottom: none; }
         
-        /* Sekcja sumowania */
         .summary-box {
             background: #ebf8ff;
             border: 1px solid #bee3f8;
@@ -201,14 +241,25 @@
         <form id="mainForm" onsubmit="addJob(event)">
             <div class="form-group">
                 <label for="machine">Maszyna / Wykonane prace</label>
-                <textarea id="machine" rows="2" required placeholder="np. Pakowaczka - wymiana blokady, czyszczenie"></textarea>
+                <textarea id="machine" rows="2" required placeholder="np. Pakowaczka - wymiana części"></textarea>
+                
+                <!-- Akordeon z historią maszyn -->
+                <div class="history-accordion">
+                    <div class="history-header" onclick="toggleAccordion()">
+                        <span>Wybież z ostatnich maszyn...</span>
+                        <span id="arr-icon">▼</span>
+                    </div>
+                    <ul id="historyList" class="history-list">
+                        <!-- Wrzucane dynamicznie z poziomu JS -->
+                    </ul>
+                </div>
             </div>
             
-            <h3>Użyte części (opcjonalnie)</h3>
+            <h3>Użyte części</h3>
             <div class="part-row">
                 <div class="form-group">
                     <label for="partName">Nazwa części</label>
-                    <input type="text" id="partName" placeholder="np. Stycznik, Blokada bezpieczeństwa">
+                    <input type="text" id="partName" placeholder="np. Stycznik, Bezpiecznik">
                 </div>
                 <div class="form-group">
                     <label for="partModel">Model / Typ</label>
@@ -220,7 +271,7 @@
                 </div>
             </div>
             
-            <button type="submit">Zapisz pracę i części</button>
+            <button type="submit">Zapisz część do maszyny</button>
         </form>
     </div>
 
@@ -232,7 +283,7 @@
         <div id="jobsContainer"></div>
         <div id="totalsContainer"></div>
 
-        <button class="btn-clear" onclick="clearData()">Wyczyść całą bazę</button>
+        <button class="btn-clear" onclick="clearData()">Wyczyść całą baze</button>
     </div>
 </div>
 
@@ -241,12 +292,22 @@
 <script>
     let jobsList = JSON.parse(localStorage.getItem('jobsList')) || [];
 
+    // Po załadowaniu strony przywracamy ostatnią wpisaną maszynę oraz odświeżamy akordeon
+    window.onload = function() {
+        const lastMachine = localStorage.getItem('lastUsedMachine');
+        if (lastMachine) {
+            document.getElementById('machine').value = lastMachine;
+        }
+        updateHistoryAccordion();
+    };
+
     function switchTab(tabId) {
         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
         
         if(tabId === 'pobieranie') {
             document.querySelectorAll('.tab')[0].classList.add('active');
+            updateHistoryAccordion();
         } else {
             document.querySelectorAll('.tab')[1].classList.add('active');
             renderJobs();
@@ -258,6 +319,40 @@
         const toast = document.getElementById('toast');
         toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+
+    // Zarządzanie rozwijaniem akordeonu
+    function toggleAccordion() {
+        const list = document.getElementById('historyList');
+        const icon = document.getElementById('arr-icon');
+        list.classList.toggle('open');
+        icon.textContent = list.classList.contains('open') ? '▲' : '▼';
+    }
+
+    // Aktualizacja listy w akordeonie
+    function updateHistoryAccordion() {
+        const listContainer = document.getElementById('historyList');
+        listContainer.innerHTML = '';
+        
+        // Wyciągamy unikalne nazwy maszyn ze wszystkich dotychczasowych wpisów
+        let uniqueMachines = [...new Set(jobsList.map(j => j.machine))].reverse();
+
+        if (uniqueMachines.length === 0) {
+            listContainer.innerHTML = '<li class="history-item" style="color:#718096; font-style:italic;">Brak historii wpisów</li>';
+            return;
+        }
+
+        uniqueMachines.forEach(m => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.textContent = m;
+            li.onclick = function() {
+                document.getElementById('machine').value = m;
+                localStorage.setItem('lastUsedMachine', m);
+                toggleAccordion();
+            };
+            listContainer.appendChild(li);
+        });
     }
 
     function addJob(event) {
@@ -275,19 +370,23 @@
 
         jobsList.push({ machine, parts });
         localStorage.setItem('jobsList', JSON.stringify(jobsList));
+        
+        // Zapisujemy maszynę w pamięci jako ostatnio używaną
+        localStorage.setItem('lastUsedMachine', machine);
 
-        document.getElementById('mainForm').reset();
+        // Czyścimy WYŁĄCZNIE sekcję części. Nazwa maszyny zostaje!
+        document.getElementById('partName').value = '';
+        document.getElementById('partModel').value = '';
         document.getElementById('partQty').value = 1;
         
         showToast();
+        updateHistoryAccordion();
     }
 
-    // Wyliczanie sumarycznych wartości wszystkich części
     function calculateTotals() {
         let totals = {};
         jobsList.forEach(job => {
             job.parts.forEach(p => {
-                // Klucz unikalny łączący nazwę i model
                 const key = `${p.name.toLowerCase()}|||${p.model.toLowerCase()}`;
                 if (totals[key]) {
                     totals[key].qty += parseInt(p.qty);
@@ -310,7 +409,6 @@
             return;
         }
 
-        // Renderowanie kart prac per maszyna
         jobsList.forEach((job, index) => {
             const div = document.createElement('div');
             div.className = 'job-card';
@@ -337,7 +435,6 @@
             container.appendChild(div);
         });
 
-        // Renderowanie automatycznej sumy wszystkich powtarzających się części
         const totals = calculateTotals();
         if(totals.length > 0) {
             let totalsHtml = `
@@ -447,7 +544,10 @@
         if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr prac i części?')) {
             jobsList = [];
             localStorage.removeItem('jobsList');
+            localStorage.removeItem('lastUsedMachine');
+            document.getElementById('machine').value = '';
             renderJobs();
+            updateHistoryAccordion();
         }
     }
 </script>
