@@ -161,21 +161,58 @@
         .btn-download { background-color: #2f855a; margin-bottom: 15px; }
         .btn-clear { background-color: #e53e3e; margin-top: 25px; padding: 10px; font-size: 14px; }
 
-        .job-card {
+        /* NOWY AKORDEON DLA ZESTAWIENIA MASZYN */
+        .machine-accordion {
             background: #f8fafc;
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            overflow: hidden;
         }
-        .job-title {
+        .machine-acc-header {
+            background: #edf2f7;
+            padding: 14px;
             font-weight: bold;
             font-size: 16px;
             color: #2d3748;
-            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .machine-acc-header:active { background: #e2e8f0; }
+        .machine-acc-content {
+            display: none;
+            padding: 14px;
+            background: #fff;
+            border-top: 1px solid var(--border);
+        }
+        .machine-acc-content.open { display: block; }
+
+        .entry-block {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+            position: relative;
+        }
+        .entry-time {
+            font-size: 11px;
+            color: #718096;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .entry-work {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 6px;
+            white-space: pre-wrap;
+        }
+        
         .job-parts-list {
-            margin-top: 8px;
+            margin: 5px 0 0 0;
             padding-left: 0;
             list-style: none;
             background: #fff;
@@ -184,7 +221,7 @@
         }
         .job-parts-list li {
             padding: 8px 12px;
-            font-size: 14px;
+            font-size: 13px;
             border-bottom: 1px solid #edf2f7;
             display: flex;
             justify-content: space-between;
@@ -192,53 +229,28 @@
         }
         .job-parts-list li:last-child { border-bottom: none; }
         
-        .part-info {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
+        .part-info { display: flex; flex-direction: column; flex-grow: 1; }
         .part-name-text { font-weight: 500; }
-        .part-model-text { font-size: 12px; color: #718096; }
+        .part-model-text { font-size: 11px; color: #718096; }
         
-        .part-qty-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .part-qty-actions { display: flex; align-items: center; gap: 12px; }
         
-        /* Mały przycisk usuwania pojedynczej części */
         .btn-delete-item {
-            background: #fed7d7;
-            color: #c53030;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            width: auto;
+            background: #fed7d7; color: #c53030; border: none; border-radius: 4px;
+            padding: 2px 6px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
 
         .summary-box {
-            background: #ebf8ff;
-            border: 1px solid #bee3f8;
-            border-radius: 10px;
-            padding: 14px;
-            margin-top: 20px;
+            background: #ebf8ff; border: 1px solid #bee3f8;
+            border-radius: 10px; padding: 14px; margin-top: 20px;
         }
-        .summary-title {
-            font-weight: bold;
-            color: #2b6cb0;
-            margin-bottom: 8px;
-            font-size: 15px;
-        }
+        .summary-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 15px; }
         
         .card-actions { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-inline { padding: 8px; font-size: 13px; background-color: #718096; }
+        .btn-inline { padding: 6px 12px; font-size: 12px; background-color: #718096; border-radius: 6px; color: white; border:none; width: auto; font-weight: normal; }
         .btn-inline-save { background-color: #2f855a; }
         .btn-inline-danger { background-color: #e53e3e; }
-        .edit-form input { padding: 8px; font-size: 15px; margin-bottom: 8px; }
-
+        
         .empty-message { text-align: center; color: #718096; padding: 30px 0; }
 
         .toast {
@@ -263,19 +275,24 @@
         <h2>Rejestracja prac</h2>
         <form id="mainForm" onsubmit="addJob(event)">
             <div class="form-group">
-                <label for="machine">Maszyna / Wykonane prace</label>
-                <textarea id="machine" rows="2" required placeholder="np. Pakowaczka - wymiana części"></textarea>
+                <label for="machine">Nazwa maszyny</label>
+                <input type="text" id="machine" required placeholder="np. Pakowaczka nr 2, Linia A">
                 
                 <div class="history-accordion">
-                    <div class="history-header" onclick="toggleAccordion()">
+                    <div class="history-header" onclick="toggleHistoryAccordion()">
                         <span>Wybierz z ostatnich maszyn...</span>
                         <span id="arr-icon">▼</span>
                     </div>
                     <ul id="historyList" class="history-list"></ul>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="workDone">Wykonane prace</label>
+                <textarea id="workDone" rows="2" placeholder="np. Wymiana czujnika krańcowego, przegląd okresowy"></textarea>
+            </div>
             
-            <h3>Użyte części</h3>
+            <h3>Użyte części (opcjonalnie)</h3>
             <div class="part-row">
                 <div class="form-group">
                     <label for="partName">Nazwa części</label>
@@ -291,7 +308,7 @@
                 </div>
             </div>
             
-            <button type="submit">Zapisz część do maszyny</button>
+            <button type="submit">Zapisz wpis</button>
         </form>
     </div>
 
@@ -310,7 +327,9 @@
 <div id="toast" class="toast">Zapisano pomyślnie!</div>
 
 <script>
-    let jobsList = JSON.parse(localStorage.getItem('jobsList')) || [];
+    // Baza danych pogrupowana po maszynach: [{ machine: "Nazwa", entries: [{ time: "12:34", work: "Prace", parts: [...] }] }]
+    let machinesData = JSON.parse(localStorage.getItem('machinesData')) || [];
+    let openedAccordions = {}; // Zapamiętuje stan rozwinięcia akordeonów
 
     window.onload = function() {
         const lastMachine = localStorage.getItem('lastUsedMachine');
@@ -340,7 +359,7 @@
         setTimeout(() => { toast.classList.remove('show'); }, 2000);
     }
 
-    function toggleAccordion() {
+    function toggleHistoryAccordion() {
         const list = document.getElementById('historyList');
         const icon = document.getElementById('arr-icon');
         list.classList.toggle('open');
@@ -351,10 +370,10 @@
         const listContainer = document.getElementById('historyList');
         listContainer.innerHTML = '';
         
-        let uniqueMachines = [...new Set(jobsList.map(j => j.machine))].reverse();
+        let uniqueMachines = [...new Set(machinesData.map(m => m.machine))].reverse();
 
         if (uniqueMachines.length === 0) {
-            listContainer.innerHTML = '<li class="history-item" style="color:#718096; font-style:italic;">Brak historii wpisów</li>';
+            listContainer.innerHTML = '<li class="history-item" style="color:#718096; font-style:italic;">Brak historii maszyn</li>';
             return;
         }
 
@@ -365,47 +384,68 @@
             li.onclick = function() {
                 document.getElementById('machine').value = m;
                 localStorage.setItem('lastUsedMachine', m);
-                toggleAccordion();
+                toggleHistoryAccordion();
             };
             listContainer.appendChild(li);
         });
     }
 
+    function toggleMachineAccordion(index) {
+        const content = document.getElementById(`mach-content-${index}`);
+        const indicator = document.getElementById(`indicator-${index}`);
+        if(content.classList.contains('open')) {
+            content.classList.remove('open');
+            indicator.textContent = '▼';
+            openedAccordions[index] = false;
+        } else {
+            content.classList.add('open');
+            indicator.textContent = '▲';
+            openedAccordions[index] = true;
+        }
+    }
+
     function addJob(event) {
         event.preventDefault();
         
-        const machine = document.getElementById('machine').value.trim();
+        const machineName = document.getElementById('machine').value.trim();
+        const workDone = document.getElementById('workDone').value.trim() || 'Dopisanie części / brak opisu prac';
         const partName = document.getElementById('partName').value.trim();
         const partModel = document.getElementById('partModel').value.trim() || '-';
         const partQty = parseInt(document.getElementById('partQty').value) || 0;
 
-        let newPart = null;
+        let partsArray = [];
         if (partName) {
-            newPart = { name: partName, model: partModel, qty: partQty };
+            partsArray.push({ name: partName, model: partModel, qty: partQty });
         }
 
-        // SZUKAMY CZY MASZYNA JUŻ JEST NA LIŚCIE
-        let existingJob = jobsList.find(j => j.machine.toLowerCase() === machine.toLowerCase());
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
-        if (existingJob) {
-            // Jeśli maszyna istnieje i wpisaliśmy część, dopisujemy ją do jej listy
-            if (newPart) {
-                // Jeśli taka sama część o tym samym modelu już tam jest, sumujemy ilość
-                let existingPart = existingJob.parts.find(p => p.name.toLowerCase() === partName.toLowerCase() && p.model.toLowerCase() === partModel.toLowerCase());
-                if (existingPart) {
-                    existingPart.qty += partQty;
-                } else {
-                    existingJob.parts.push(newPart);
-                }
-            }
+        // Szukamy czy ta maszyna już istnieje w bazie
+        let machineObj = machinesData.find(m => m.machine.toLowerCase() === machineName.toLowerCase());
+
+        const newEntry = {
+            time: currentTime,
+            work: workDone,
+            parts: partsArray
+        };
+
+        if (machineObj) {
+            // Jeśli istnieje, po prostu dodajemy nowy wpis historii prac do tej maszyny
+            machineObj.entries.push(newEntry);
         } else {
-            // Jeśli maszyny nie ma, tworzymy nowy wpis
-            jobsList.push({ machine, parts: newPart ? [newPart] : [] });
+            // Jeśli nie, tworzymy nową maszynę z pierwszym wpisem
+            machinesData.push({
+                machine: machineName,
+                entries: [newEntry]
+            });
         }
 
-        localStorage.setItem('jobsList', JSON.stringify(jobsList));
-        localStorage.setItem('lastUsedMachine', machine);
+        localStorage.setItem('machinesData', JSON.stringify(machinesData));
+        localStorage.setItem('lastUsedMachine', machineName);
 
+        // Reset pól formularza oprócz nazwy maszyny
+        document.getElementById('workDone').value = '';
         document.getElementById('partName').value = '';
         document.getElementById('partModel').value = '';
         document.getElementById('partQty').value = 1;
@@ -416,40 +456,47 @@
 
     function calculateTotals() {
         let totals = {};
-        jobsList.forEach(job => {
-            job.parts.forEach(p => {
-                const key = `${p.name.toLowerCase()}|||${p.model.toLowerCase()}`;
-                if (totals[key]) {
-                    totals[key].qty += parseInt(p.qty);
-                } else {
-                    totals[key] = { name: p.name, model: p.model, qty: parseInt(p.qty) };
-                }
+        machinesData.forEach(m => {
+            m.entries.forEach(entry => {
+                entry.parts.forEach(p => {
+                    const key = `${p.name.toLowerCase()}|||${p.model.toLowerCase()}`;
+                    if (totals[key]) {
+                        totals[key].qty += parseInt(p.qty);
+                    } else {
+                        totals[key] = { name: p.name, model: p.model, qty: parseInt(p.qty) };
+                    }
+                });
             });
         });
         return Object.values(totals);
     }
 
-    // USUNIĘCIE POJEDYNCZEJ CZĘŚCI
-    function deleteSinglePart(jobIndex, partIndex) {
+    function deleteSinglePart(mIndex, eIndex, pIndex) {
         if(confirm('Usunąć tę część ze spisu?')) {
-            jobsList[jobIndex].parts.splice(partIndex, 1);
-            
-            // Jeśli maszyna nie ma już żadnych części ani opisu prac, można ją też zostawić lub usunąć pustą kartę
-            if(jobsList[jobIndex].parts.length === 0) {
-                // Opcjonalnie: usuwamy całą maszynę jeśli nie ma części
-                jobsList.splice(jobIndex, 1);
-            }
-            
-            localStorage.setItem('jobsList', JSON.stringify(jobsList));
+            machinesData[mIndex].entries[eIndex].parts.splice(pIndex, 1);
+            localStorage.setItem('machinesData', JSON.stringify(machinesData));
             renderJobs();
         }
     }
 
-    // USUNIĘCIE CAŁEJ MASZYNY
-    function deleteEntireJob(jobIndex) {
-        if(confirm('Czy na pewno chcesz usunąć całą tę maszynę wraz z częściami?')) {
-            jobsList.splice(jobIndex, 1);
-            localStorage.setItem('jobsList', JSON.stringify(jobsList));
+    function deleteEntireEntry(mIndex, eIndex) {
+        if(confirm('Czy na pewno usunąć ten konkretny wpis pracy wraz z częściami?')) {
+            machinesData[mIndex].entries.splice(eIndex, 1);
+            
+            // Jeśli maszyna nie ma już żadnych wpisów, usuwamy całą maszynę
+            if(machinesData[mIndex].entries.length === 0) {
+                machinesData.splice(mIndex, 1);
+            }
+            
+            localStorage.setItem('machinesData', JSON.stringify(machinesData));
+            renderJobs();
+        }
+    }
+
+    function deleteEntireMachine(mIndex) {
+        if(confirm('Czy na pewno chcesz usunąć tę maszynę i całą jej historię dzisiejszych prac?')) {
+            machinesData.splice(mIndex, 1);
+            localStorage.setItem('machinesData', JSON.stringify(machinesData));
             renderJobs();
         }
     }
@@ -460,48 +507,68 @@
         container.innerHTML = '';
         totalsContainer.innerHTML = '';
 
-        if(jobsList.length === 0) {
+        if(machinesData.length === 0) {
             container.innerHTML = '<div class="empty-message">Brak zarejestrowanych prac</div>';
             return;
         }
 
-        jobsList.forEach((job, jobIndex) => {
-            const div = document.createElement('div');
-            div.className = 'job-card';
-            div.id = `job-${jobIndex}`;
+        machinesData.forEach((mObj, mIndex) => {
+            const accordionDiv = document.createElement('div');
+            accordionDiv.className = 'machine-accordion';
             
-            let partsHtml = '';
-            if(job.parts.length > 0) {
-                partsHtml = '<ul class="job-parts-list">';
-                job.parts.forEach((p, partIndex) => {
-                    partsHtml += `
-                        <li>
-                            <div class="part-info">
-                                <span class="part-name-text">${p.name}</span>
-                                <span class="part-model-text">Model: ${p.model}</span>
-                            </div>
-                            <div class="part-qty-actions">
-                                <strong>${p.qty} szt.</strong>
-                                <button class="btn-delete-item" onclick="deleteSinglePart(${jobIndex}, ${partIndex})">X</button>
-                            </div>
-                        </li>`;
-                });
-                partsHtml += '</ul>';
-            } else {
-                partsHtml = '<div style="font-size:13px; color:#a0aec0; margin-top:5px;">Brak zużytych części</div>';
-            }
+            // Renderowanie wpisów wewnątrz maszyny
+            let entriesHtml = '';
+            mObj.entries.forEach((entry, eIndex) => {
+                let partsHtml = '';
+                if(entry.parts.length > 0) {
+                    partsHtml = '<ul class="job-parts-list">';
+                    entry.parts.forEach((p, pIndex) => {
+                        partsHtml += `
+                            <li>
+                                <div class="part-info">
+                                    <span class="part-name-text">${p.name}</span>
+                                    <span class="part-model-text">Model: ${p.model}</span>
+                                </div>
+                                <div class="part-qty-actions">
+                                    <strong>${p.qty} szt.</strong>
+                                    <button class="btn-delete-item" onclick="event.stopPropagation(); deleteSinglePart(${mIndex}, ${eIndex}, ${pIndex})">X</button>
+                                </div>
+                            </li>`;
+                    });
+                    partsHtml += '</ul>';
+                }
 
-            div.innerHTML = `
-                <div class="job-title">${job.machine}</div>
-                ${partsHtml}
-                <div class="card-actions">
-                    <button class="btn-inline" onclick="showEditJobForm(${jobIndex})">Edytuj nazwę</button>
-                    <button class="btn-inline btn-inline-danger" onclick="deleteEntireJob(${jobIndex})">Usuń maszynę</button>
+                entriesHtml += `
+                    <div class="entry-block">
+                        <div class="entry-time">[Godzina: ${entry.time}]</div>
+                        <div class="entry-work">${entry.work}</div>
+                        ${partsHtml}
+                        <div style="margin-top: 6px; text-align: right;">
+                            <button class="btn-inline btn-inline-danger" style="padding: 2px 6px; font-size: 10px;" onclick="event.stopPropagation(); deleteEntireEntry(${mIndex}, ${eIndex})">Usuń ten wpis</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const isOpen = openedAccordions[mIndex] ? 'open' : '';
+            const indicatorText = openedAccordions[mIndex] ? '▲' : '▼';
+
+            accordionDiv.innerHTML = `
+                <div class="machine-acc-header" onclick="toggleMachineAccordion(${mIndex})">
+                    <span>${mObj.machine} (${mObj.entries.length})</span>
+                    <span id="indicator-${mIndex}">${indicatorText}</span>
+                </div>
+                <div id="mach-content-${mIndex}" class="machine-acc-content ${isOpen}">
+                    ${entriesHtml}
+                    <div class="card-actions" style="border-top: 1px dashed #cbd5e0; padding-top: 10px; justify-content: flex-end;">
+                        <button class="btn-inline btn-inline-danger" onclick="event.stopPropagation(); deleteEntireMachine(${mIndex})">Usuń całą maszynę</button>
+                    </div>
                 </div>
             `;
-            container.appendChild(div);
+            container.appendChild(accordionDiv);
         });
 
+        // Sumowanie globalne części
         const totals = calculateTotals();
         if(totals.length > 0) {
             let totalsHtml = `
@@ -517,38 +584,8 @@
         }
     }
 
-    function showEditJobForm(index) {
-        const job = jobsList[index];
-        const div = document.getElementById(`job-${index}`);
-        
-        div.innerHTML = `
-            <div class="edit-form">
-                <label style="font-size: 13px;">Maszyna / Wykonane Prace</label>
-                <textarea id="edit-machine-${index}" rows="2" required>${job.machine}</textarea>
-                
-                <div class="card-actions">
-                    <button class="btn-inline btn-inline-save" onclick="saveJobEdit(${index})">Zapisz</button>
-                    <button class="btn-inline" style="background-color: #a0aec0;" onclick="renderJobs()">Anuluj</button>
-                </div>
-            </div>
-        `;
-    }
-
-    function saveJobEdit(index) {
-        const machine = document.getElementById(`edit-machine-${index}`).value.trim();
-
-        if(!machine) {
-            alert('Opis maszyny jest wymagany!');
-            return;
-        }
-
-        jobsList[index].machine = machine;
-        localStorage.setItem('jobsList', JSON.stringify(jobsList));
-        renderJobs();
-    }
-
     function downloadTxt() {
-        if(jobsList.length === 0) {
+        if(machinesData.length === 0) {
             alert('Lista jest pusta.');
             return;
         }
@@ -557,16 +594,17 @@
         let textContent = `ZESTAWIENIE ROBOCZE - DNIA: ${date}\n`;
         textContent += `===========================================\n\n`;
 
-        textContent += `SZCZEGÓŁOWY REJESTR PRAC:\n`;
-        jobsList.forEach((job, index) => {
-            textContent += `${index + 1}. Maszyna/Prace: ${job.machine}\n`;
-            if(job.parts.length > 0) {
-                job.parts.forEach(p => {
-                    textContent += `   -> Część: ${p.name} | Model: ${p.model} | Ilość: ${p.qty} szt.\n`;
-                });
-            } else {
-                textContent += `   -> Zużycie części: brak\n`;
-            }
+        textContent += `PODZIAŁ NA MASZYNY I HISTORIĘ PRAC:\n`;
+        machinesData.forEach((mObj, index) => {
+            textContent += `${index + 1}. MASZYNA: ${mObj.machine}\n`;
+            mObj.entries.forEach(entry => {
+                textContent += `   [${entry.time}] Praca: ${entry.work}\n`;
+                if(entry.parts.length > 0) {
+                    entry.parts.forEach(p => {
+                        textContent += `      -> Część: ${p.name} | Model: ${p.model} | Ilość: ${p.qty} szt.\n`;
+                    });
+                }
+            });
             textContent += `-------------------------------------------\n`;
         });
 
@@ -583,15 +621,16 @@
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `zestawienie_prac_${date.replace(/\./g, '_')}.txt`;
+        link.download = `zestawienie_maszyn_${date.replace(/\./g, '_')}.txt`;
         link.click();
         URL.revokeObjectURL(link.href);
     }
 
     function clearData() {
-        if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr prac i części?')) {
-            jobsList = [];
-            localStorage.removeItem('jobsList');
+        if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr maszyn, prac i części?')) {
+            machinesData = [];
+            openedAccordions = {};
+            localStorage.removeItem('machinesData');
             localStorage.removeItem('lastUsedMachine');
             document.getElementById('machine').value = '';
             renderJobs();
