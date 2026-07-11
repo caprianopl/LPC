@@ -161,7 +161,6 @@
         .btn-download { background-color: #2f855a; margin-bottom: 15px; }
         .btn-clear { background-color: #e53e3e; margin-top: 25px; padding: 10px; font-size: 14px; }
 
-        /* NOWY AKORDEON DLA ZESTAWIENIA MASZYN */
         .machine-accordion {
             background: #f8fafc;
             border: 1px solid var(--border);
@@ -248,7 +247,6 @@
         
         .card-actions { display: flex; gap: 8px; margin-top: 10px; }
         .btn-inline { padding: 6px 12px; font-size: 12px; background-color: #718096; border-radius: 6px; color: white; border:none; width: auto; font-weight: normal; }
-        .btn-inline-save { background-color: #2f855a; }
         .btn-inline-danger { background-color: #e53e3e; }
         
         .empty-message { text-align: center; color: #718096; padding: 30px 0; }
@@ -276,7 +274,8 @@
         <form id="mainForm" onsubmit="addJob(event)">
             <div class="form-group">
                 <label for="machine">Nazwa maszyny</label>
-                <input type="text" id="machine" required placeholder="np. Pakowaczka nr 2, Linia A">
+                <!-- Zdarzenie oninput wykrywa ręczną zmianę maszyny i czyści powiązaną pracę -->
+                <input type="text" id="machine" required placeholder="np. Pakowaczka nr 2, Linia A" oninput="handleMachineChange()">
                 
                 <div class="history-accordion">
                     <div class="history-header" onclick="toggleHistoryAccordion()">
@@ -308,7 +307,7 @@
                 </div>
             </div>
             
-            <button type="submit">Zapisz wpis</button>
+            <button type="submit">Zapisz (dodaj kolejną część / pracę)</button>
         </form>
     </div>
 
@@ -327,14 +326,19 @@
 <div id="toast" class="toast">Zapisano pomyślnie!</div>
 
 <script>
-    // Baza danych pogrupowana po maszynach: [{ machine: "Nazwa", entries: [{ time: "12:34", work: "Prace", parts: [...] }] }]
     let machinesData = JSON.parse(localStorage.getItem('machinesData')) || [];
-    let openedAccordions = {}; // Zapamiętuje stan rozwinięcia akordeonów
+    let openedAccordions = {};
 
     window.onload = function() {
         const lastMachine = localStorage.getItem('lastUsedMachine');
+        const lastWork = localStorage.getItem('lastUsedWork');
+        
         if (lastMachine) {
             document.getElementById('machine').value = lastMachine;
+            // Przywracamy zapamiętaną pracę tylko dla tej konkretnej maszyny
+            if (lastWork) {
+                document.getElementById('workDone').value = lastWork;
+            }
         }
         updateHistoryAccordion();
     };
@@ -382,12 +386,30 @@
             li.className = 'history-item';
             li.textContent = m;
             li.onclick = function() {
+                // Skoro użytkownik klika zupełnie inną maszynę z historii, resetujemy pole pracy
+                const currentMachine = document.getElementById('machine').value.trim();
+                if(currentMachine.toLowerCase() !== m.toLowerCase()) {
+                    document.getElementById('workDone').value = '';
+                    localStorage.removeItem('lastUsedWork');
+                }
+                
                 document.getElementById('machine').value = m;
                 localStorage.setItem('lastUsedMachine', m);
                 toggleHistoryAccordion();
             };
             listContainer.appendChild(li);
         });
+    }
+
+    // Wywoływane, gdy użytkownik ręcznie edytuje tekst w polu "Nazwa maszyny"
+    function handleMachineChange() {
+        const currentMachine = document.getElementById('machine').value.trim();
+        const lastMachine = localStorage.getItem('lastUsedMachine') || '';
+        
+        if(currentMachine.toLowerCase() !== lastMachine.toLowerCase()) {
+            document.getElementById('workDone').value = '';
+            localStorage.removeItem('lastUsedWork');
+        }
     }
 
     function toggleMachineAccordion(index) {
@@ -408,44 +430,55 @@
         event.preventDefault();
         
         const machineName = document.getElementById('machine').value.trim();
-        const workDone = document.getElementById('workDone').value.trim() || 'Dopisanie części / brak opisu prac';
+        const workDone = document.getElementById('workDone').value.trim() || 'Prace bieżące / Dopisanie części';
         const partName = document.getElementById('partName').value.trim();
         const partModel = document.getElementById('partModel').value.trim() || '-';
         const partQty = parseInt(document.getElementById('partQty').value) || 0;
 
-        let partsArray = [];
-        if (partName) {
-            partsArray.push({ name: partName, model: partModel, qty: partQty });
-        }
-
         const now = new Date();
         const currentTime = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
-        // Szukamy czy ta maszyna już istnieje w bazie
+        // Szukamy maszyny w bazie
         let machineObj = machinesData.find(m => m.machine.toLowerCase() === machineName.toLowerCase());
 
-        const newEntry = {
-            time: currentTime,
-            work: workDone,
-            parts: partsArray
-        };
-
-        if (machineObj) {
-            // Jeśli istnieje, po prostu dodajemy nowy wpis historii prac do tej maszyny
-            machineObj.entries.push(newEntry);
-        } else {
-            // Jeśli nie, tworzymy nową maszynę z pierwszym wpisem
+        if (!machineObj) {
+            // Pierwszy wpis dla nowej maszyny
+            let partsArray = [];
+            if (partName) partsArray.push({ name: partName, model: partModel, qty: partQty });
+            
             machinesData.push({
                 machine: machineName,
-                entries: [newEntry]
+                entries: [{ time: currentTime, work: workDone, parts: partsArray }]
             });
+        } else {
+            // Maszyna istnieje – sprawdzamy, czy aktualny opis pracy pokrywa się z OSTATNIM wpisem
+            let lastEntry = machineObj.entries[machineObj.entries.length - 1];
+            
+            if (lastEntry && lastEntry.work.toLowerCase() === workDone.toLowerCase()) {
+                // PRACA JEST TA SAMA -> Dopisujemy nową część bezpośrednio do istniejącego wpisu
+                if (partName) {
+                    let existingPart = lastEntry.parts.find(p => p.name.toLowerCase() === partName.toLowerCase() && p.model.toLowerCase() === partModel.toLowerCase());
+                    if (existingPart) {
+                        existingPart.qty += partQty;
+                    } else {
+                        lastEntry.parts.push({ name: partName, model: partModel, qty: partQty });
+                    }
+                }
+            } else {
+                // PRACA JEST INNA -> Tworzymy nowy wpis pracy z osobną godziną
+                let partsArray = [];
+                if (partName) partsArray.push({ name: partName, model: partModel, qty: partQty });
+                
+                machineObj.entries.push({ time: currentTime, work: workDone, parts: partsArray });
+            }
         }
 
+        // Zapis stanu
         localStorage.setItem('machinesData', JSON.stringify(machinesData));
         localStorage.setItem('lastUsedMachine', machineName);
+        localStorage.setItem('lastUsedWork', workDone);
 
-        // Reset pól formularza oprócz nazwy maszyny
-        document.getElementById('workDone').value = '';
+        // ERGONOMIA: Czyścimy wyłącznie formularz części, maszyna i praca zostają do szybkiego "dodaj kolejną"
         document.getElementById('partName').value = '';
         document.getElementById('partModel').value = '';
         document.getElementById('partQty').value = 1;
@@ -482,19 +515,16 @@
     function deleteEntireEntry(mIndex, eIndex) {
         if(confirm('Czy na pewno usunąć ten konkretny wpis pracy wraz z częściami?')) {
             machinesData[mIndex].entries.splice(eIndex, 1);
-            
-            // Jeśli maszyna nie ma już żadnych wpisów, usuwamy całą maszynę
             if(machinesData[mIndex].entries.length === 0) {
                 machinesData.splice(mIndex, 1);
             }
-            
             localStorage.setItem('machinesData', JSON.stringify(machinesData));
             renderJobs();
         }
     }
 
     function deleteEntireMachine(mIndex) {
-        if(confirm('Czy na pewno chcesz usunąć tę maszynę i całą jej historię dzisiejszych prac?')) {
+        if(confirm('Czy na pewno chcesz usunąć tę maszynę i całą jej historię?')) {
             machinesData.splice(mIndex, 1);
             localStorage.setItem('machinesData', JSON.stringify(machinesData));
             renderJobs();
@@ -516,7 +546,6 @@
             const accordionDiv = document.createElement('div');
             accordionDiv.className = 'machine-accordion';
             
-            // Renderowanie wpisów wewnątrz maszyny
             let entriesHtml = '';
             mObj.entries.forEach((entry, eIndex) => {
                 let partsHtml = '';
@@ -568,7 +597,6 @@
             container.appendChild(accordionDiv);
         });
 
-        // Sumowanie globalne części
         const totals = calculateTotals();
         if(totals.length > 0) {
             let totalsHtml = `
@@ -627,12 +655,12 @@
     }
 
     function clearData() {
-        if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr maszyn, prac i części?')) {
+        if(confirm('Czy na pewno wyczyścić cały dzisiejszy rejestr?')) {
             machinesData = [];
             openedAccordions = {};
-            localStorage.removeItem('machinesData');
-            localStorage.removeItem('lastUsedMachine');
+            localStorage.clear();
             document.getElementById('machine').value = '';
+            document.getElementById('workDone').value = '';
             renderJobs();
             updateHistoryAccordion();
         }
