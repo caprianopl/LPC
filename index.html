@@ -115,7 +115,7 @@
             font-size: 14px;
         }
 
-        /* Styl kafelków i edycji */
+        /* Kafelki i akcje */
         .part-item {
             background: #f7fafc;
             border: 1px solid var(--border);
@@ -144,7 +144,6 @@
             font-size: 14px;
         }
         
-        /* Przyciski wewnątrz kafelka */
         .card-actions {
             display: flex;
             gap: 8px;
@@ -158,7 +157,6 @@
             background-color: #2f855a;
         }
         
-        /* Formularz edycji wewnątrz kafelka */
         .edit-form input {
             padding: 8px;
             font-size: 15px;
@@ -169,6 +167,27 @@
             text-align: center;
             color: #718096;
             padding: 30px 0;
+        }
+
+        /* Nowe automatyczne powiadomienie na dole ekranu */
+        .toast {
+            position: fixed;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: bottom 0.3s ease;
+            z-index: 9999;
+            white-space: nowrap;
+        }
+        .toast.show {
+            bottom: 30px;
         }
     </style>
 </head>
@@ -211,6 +230,9 @@
     </div>
 </div>
 
+<!-- Element powiadomienia -->
+<div id="toast" class="toast">Dodano pomyślnie!</div>
+
 <script>
     let partsList = JSON.parse(localStorage.getItem('partsList')) || [];
 
@@ -227,6 +249,16 @@
         document.getElementById(tabId).classList.add('active');
     }
 
+    // Funkcja wywołująca automatyczne powiadomienie
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000); // Zniknie równo po 2 sekundach (2000 ms)
+    }
+
     function addPart(event) {
         event.preventDefault();
         
@@ -240,7 +272,7 @@
         document.getElementById('partsForm').reset();
         document.getElementById('qty').value = 1;
         
-        alert('Dodano pomyślnie!');
+        showToast(); // Zamiast alert() odpalamy dymek
     }
 
     function renderList() {
@@ -257,7 +289,6 @@
             div.className = 'part-item';
             div.id = `item-${index}`;
             
-            // Standardowy widok kafelka
             div.innerHTML = `
                 <div class="part-header">
                     <span>${item.name}</span>
@@ -272,7 +303,6 @@
         });
     }
 
-    // Pokazuje pola edycji wewnątrz wybranego kafelka
     function showEditForm(index) {
         const item = partsList[index];
         const div = document.getElementById(`item-${index}`);
@@ -296,7 +326,6 @@
         `;
     }
 
-    // Zapisuje zmienione dane
     function saveEdit(index) {
         const newName = document.getElementById(`edit-name-${index}`).value.trim();
         const newModel = document.getElementById(`edit-model-${index}`).value.trim() || '-';
@@ -310,7 +339,7 @@
         partsList[index] = { name: newName, model: newModel, qty: newQty };
         localStorage.setItem('partsList', JSON.stringify(partsList));
         
-        renderList(); // Odśwież widok
+        renderList();
     }
 
     function downloadTxt() {
