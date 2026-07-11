@@ -2,109 +2,151 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warsztat - Przerwa Techniczna 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pobieranie Części</title>
     <style>
         :root {
             --primary: #2b6cb0;
             --primary-hover: #2c5282;
-            --bg: #f7fafc;
+            --bg: #edf2f7;
             --card-bg: #ffffff;
-            --text: #2d3748;
-            --border: #e2e8f0;
+            --text: #1a202c;
+            --border: #cbd5e0;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
         }
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 480px; /* Szerokość idealna pod każdy smartfon */
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
         }
-        h2 { margin-top: 0; color: var(--primary); }
         .tabs {
             display: flex;
-            border-bottom: 2px solid var(--border);
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
         .tab {
             flex: 1;
-            padding: 10px;
+            padding: 12px 5px;
             text-align: center;
             cursor: pointer;
             font-weight: bold;
-            color: #718096;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
+            font-size: 14px;
+            color: #4a5568;
+            border-radius: 6px;
+            transition: all 0.2s;
         }
         .tab.active {
+            background: var(--card-bg);
             color: var(--primary);
-            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .content { display: none; }
         .content.active { display: block; }
+        
+        h2 { 
+            margin-top: 0; 
+            margin-bottom: 15px; 
+            font-size: 18px; 
+            color: var(--primary); 
+        }
+        
         .form-group {
             margin-bottom: 15px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 15px;
         }
         input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px; /* Zapobiega zoomowaniu na iOS */
+            padding: 14px; /* Duży obszar kliknięcia */
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px; /* Wymuszone 16px zapobiega przybliżaniu ekranu na iPhone/Android */
+            background: #f8fafc;
         }
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            background: #fff;
+        }
+        
         button {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        button:hover { background-color: var(--primary-hover); }
+        button:active { filter: brightness(0.9); }
+        
         .btn-download {
             background-color: #2f855a;
             margin-bottom: 15px;
         }
-        .btn-download:hover { background-color: #22543d; }
         .btn-clear {
-            background-color: #9b2c2c;
-            margin-top: 20px;
-            padding: 8px;
+            background-color: #e53e3e;
+            margin-top: 25px;
+            padding: 10px;
             font-size: 14px;
         }
-        .btn-clear:hover { background-color: #742a2a; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+
+        /* Mobilne dopasowanie listy (zamiast ciasnej tabeli) */
+        .part-item {
+            background: #f7fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
         }
-        th, td {
-            text-align: left;
-            padding: 10px;
+        .part-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
             border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+            font-size: 16px;
         }
-        th { background-color: #edf2f7; }
+        .part-model {
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .qty-badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .empty-message {
+            text-align: center;
+            color: #718096;
+            padding: 30px 0;
+        }
     </style>
 </head>
 <body>
@@ -112,7 +154,7 @@
 <div class="container">
     <div class="tabs">
         <div class="tab active" onclick="switchTab('pobieranie')">Pobieranie części</div>
-        <div class="tab" onclick="switchTab('zestawienie')">Zestawienie dzienne</div>
+        <div class="tab" onclick="switchTab('zestawienie')">Zestawienie</div>
     </div>
 
     <!-- ZAKŁADKA 1: FORMULARZ -->
@@ -129,7 +171,7 @@
             </div>
             <div class="form-group">
                 <label for="qty">Ilość</label>
-                <input type="number" id="qty" required min="1" value="1">
+                <input type="number" id="qty" required min="1" value="1" inputmode="numeric">
             </div>
             <button type="submit">Dodaj do listy</button>
         </form>
@@ -140,28 +182,16 @@
         <h2>Zestawienie dzienne</h2>
         <button class="btn-download" onclick="downloadTxt()">Pobierz jako .TXT</button>
         
-        <table id="partsTable">
-            <thead>
-                <tr>
-                    <th>Nazwa</th>
-                    <th>Model</th>
-                    <th>Ilość</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Tutaj wpadną wiersze z JS -->
-            </tbody>
-        </table>
+        <!-- Tu wskoczą elementy wygenerowane przez JS -->
+        <div id="partsListContainer"></div>
 
         <button class="btn-clear" onclick="clearData()">Wyczyść całą listę</button>
     </div>
 </div>
 
 <script>
-    // Ładowanie danych z localStorage lub utworzenie pustej tablicy
     let partsList = JSON.parse(localStorage.getItem('partsList')) || [];
 
-    // Przełączanie zakładek
     function switchTab(tabId) {
         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
@@ -170,12 +200,11 @@
             document.querySelectorAll('.tab')[0].classList.add('active');
         } else {
             document.querySelectorAll('.tab')[1].classList.add('active');
-            renderTable();
+            renderList();
         }
         document.getElementById(tabId).classList.add('active');
     }
 
-    // Dodawanie elementu do listy
     function addPart(event) {
         event.preventDefault();
         
@@ -186,34 +215,39 @@
         partsList.push({ name, model, qty });
         localStorage.setItem('partsList', JSON.stringify(partsList));
 
-        // Reset formularza
         document.getElementById('partsForm').reset();
         document.getElementById('qty').value = 1;
         
-        alert('Dodano do zestawienia!');
+        alert('Dodano pomyślnie!');
     }
 
-    // Odświeżanie tabeli w drugiej zakładce
-    function renderTable() {
-        const tbody = document.querySelector('#partsTable tbody');
-        tbody.innerHTML = '';
+    // Wyświetlanie jako kafelki, żeby tekst na telefonie się nie gniótł
+    function renderList() {
+        const container = document.getElementById('partsListContainer');
+        container.innerHTML = '';
 
         if(partsList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Brak pobranych części</td></tr>';
+            container.innerHTML = '<div class="empty-message">Brak pobranych części</div>';
             return;
         }
 
         partsList.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${item.name}</td><td>${item.model}</td><td>${item.qty} szt.</td>`;
-            tbody.appendChild(row);
+            const div = document.createElement('div');
+            div.className = 'part-item';
+            div.innerHTML = `
+                <div class="part-header">
+                    <span>${item.name}</span>
+                    <span class="qty-badge">${item.qty} szt.</span>
+                </div>
+                <div class="part-model">Model: ${item.model}</div>
+            `;
+            container.appendChild(div);
         });
     }
 
-    // Generowanie i pobieranie pliku TXT
     function downloadTxt() {
         if(partsList.length === 0) {
-            alert('Lista jest pusta, nie mam co pobrać.');
+            alert('Lista jest pusta.');
             return;
         }
 
@@ -228,17 +262,16 @@
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `zestawienie_czesci_${date.replace(/\./g, '_')}.txt`;
+        link.download = `zestawienie_${date.replace(/\./g, '_')}.txt`;
         link.click();
         URL.revokeObjectURL(link.href);
     }
 
-    // Czyszczenie danych po skończonym dniu/pracy
     function clearData() {
-        if(confirm('Czy na pewno chcesz wyczyścić całe dzisiejsze zestawienie?')) {
+        if(confirm('Wyczyścić całą listę?')) {
             partsList = [];
             localStorage.removeItem('partsList');
-            renderTable();
+            renderList();
         }
     }
 </script>
