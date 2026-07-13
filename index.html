@@ -238,6 +238,10 @@
             background: #fed7d7; color: #c53030; border: none; border-radius: 4px;
             padding: 2px 6px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
+        .btn-edit-item {
+            background: #c6f6d5; color: #22543d; border: none; border-radius: 4px;
+            padding: 2px 6px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
 
         .summary-box {
             background: #ebf8ff; border: 1px solid #bee3f8;
@@ -247,6 +251,7 @@
         
         .card-actions { display: flex; gap: 8px; margin-top: 10px; }
         .btn-inline { padding: 6px 12px; font-size: 12px; background-color: #718096; border-radius: 6px; color: white; border:none; width: auto; font-weight: normal; }
+        .btn-inline-edit { background-color: #2f855a; }
         .btn-inline-danger { background-color: #e53e3e; }
         
         .empty-message { text-align: center; color: #718096; padding: 30px 0; }
@@ -512,6 +517,67 @@
         }
     }
 
+    function editSinglePart(mIndex, eIndex, pIndex) {
+        const part = machinesData[mIndex].entries[eIndex].parts[pIndex];
+        const newNameInput = prompt('Nowa nazwa części:', part.name);
+        if (newNameInput === null) return;
+        const newName = newNameInput.trim();
+        if (!newName) {
+            alert('Nazwa części nie może być pusta.');
+            return;
+        }
+
+        const newModelInput = prompt('Nowy model / typ:', part.model);
+        if (newModelInput === null) return;
+        const newModel = newModelInput.trim() || '-';
+
+        const newQtyInput = prompt('Nowa ilość (liczba całkowita > 0):', part.qty);
+        if (newQtyInput === null) return;
+        const newQty = parseInt(newQtyInput, 10);
+        if (!Number.isInteger(newQty) || newQty <= 0) {
+            alert('Ilość musi być liczbą całkowitą większą od 0.');
+            return;
+        }
+
+        part.name = newName;
+        part.model = newModel;
+        part.qty = newQty;
+
+        localStorage.setItem('machinesData', JSON.stringify(machinesData));
+        renderJobs();
+    }
+
+    function editEntry(mIndex, eIndex) {
+        const entry = machinesData[mIndex].entries[eIndex];
+        const newWorkInput = prompt('Popraw opis wykonanych prac:', entry.work);
+        if (newWorkInput === null) return;
+        const newWork = newWorkInput.trim();
+        if (!newWork) {
+            alert('Opis pracy nie może być pusty.');
+            return;
+        }
+
+        entry.work = newWork;
+        localStorage.setItem('machinesData', JSON.stringify(machinesData));
+        renderJobs();
+    }
+
+    function editMachine(mIndex) {
+        const machine = machinesData[mIndex];
+        const newMachineInput = prompt('Popraw nazwę maszyny:', machine.machine);
+        if (newMachineInput === null) return;
+        const newMachine = newMachineInput.trim();
+        if (!newMachine) {
+            alert('Nazwa maszyny nie może być pusta.');
+            return;
+        }
+
+        machine.machine = newMachine;
+        localStorage.setItem('machinesData', JSON.stringify(machinesData));
+        updateHistoryAccordion();
+        renderJobs();
+    }
+
     function deleteEntireEntry(mIndex, eIndex) {
         if(confirm('Czy na pewno usunąć ten konkretny wpis pracy wraz z częściami?')) {
             machinesData[mIndex].entries.splice(eIndex, 1);
@@ -560,6 +626,7 @@
                                 </div>
                                 <div class="part-qty-actions">
                                     <strong>${p.qty} szt.</strong>
+                                    <button class="btn-edit-item" onclick="event.stopPropagation(); editSinglePart(${mIndex}, ${eIndex}, ${pIndex})">Edytuj</button>
                                     <button class="btn-delete-item" onclick="event.stopPropagation(); deleteSinglePart(${mIndex}, ${eIndex}, ${pIndex})">X</button>
                                 </div>
                             </li>`;
@@ -573,6 +640,7 @@
                         <div class="entry-work">${entry.work}</div>
                         ${partsHtml}
                         <div style="margin-top: 6px; text-align: right;">
+                            <button class="btn-inline btn-inline-edit" style="padding: 2px 6px; font-size: 10px;" onclick="event.stopPropagation(); editEntry(${mIndex}, ${eIndex})">Edytuj wpis</button>
                             <button class="btn-inline btn-inline-danger" style="padding: 2px 6px; font-size: 10px;" onclick="event.stopPropagation(); deleteEntireEntry(${mIndex}, ${eIndex})">Usuń ten wpis</button>
                         </div>
                     </div>
@@ -590,6 +658,7 @@
                 <div id="mach-content-${mIndex}" class="machine-acc-content ${isOpen}">
                     ${entriesHtml}
                     <div class="card-actions" style="border-top: 1px dashed #cbd5e0; padding-top: 10px; justify-content: flex-end;">
+                        <button class="btn-inline btn-inline-edit" onclick="event.stopPropagation(); editMachine(${mIndex})">Edytuj maszynę</button>
                         <button class="btn-inline btn-inline-danger" onclick="event.stopPropagation(); deleteEntireMachine(${mIndex})">Usuń całą maszynę</button>
                     </div>
                 </div>
