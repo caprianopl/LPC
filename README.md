@@ -13,6 +13,7 @@ Aplikacja działa w 100% lokalnie w przeglądarce (nie wymaga serwera ani bazy d
 *   **Kontekstowa Pamięć Formularza:** Po zapisaniu wpisu, formularz czyści pola części, ale **zostawia wpisaną maszynę oraz opis pracy**. Możesz od razu wbijać kolejne elementy. 
 *   **Automatyczny Reset przy Zmianie:** Jeśli ręcznie zmienisz maszynę lub wybierzesz inną z historii ostatnich urządzeń, pole opisu prac natychmiast się czyści, zapobiegając przypadkowemu przypisaniu starego opisu do nowej maszyny.
 *   **Dzienny Akordeon Zestawienia:** Zakładka "Zestawienie" grupuje dane w czytelne, rozwijane karty maszyn z dokładną godziną każdego wpisu.
+*   **Szybka Edycja Wpisów:** W zakładce "Zestawienie" możesz poprawić nazwę maszyny, opis wykonanej pracy oraz dane części bez konieczności usuwania i wpisywania wszystkiego od nowa.
 *   **Automatyczne Sumowanie:** System na bieżąco generuje globalną listę zbiorczą wszystkich zużytych w ciągu dnia części (idealne do szybkiego zdania raportu lub pobrania z magazynu).
 *   **Eksport do Pliku:** Możliwość pobrania całego dziennego raportu do czystego pliku `.TXT` jednym kliknięciem.
 
