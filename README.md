@@ -4,6 +4,18 @@ Prosta, szybka i lekka aplikacja webowa typu **Single Page Application (SPA)**, 
 
 Aplikacja działa w 100% lokalnie w przeglądarce (nie wymaga serwera ani bazy danych) i automatycznie zapisuje stan pracy.
 
+**Zaprojektował i zbudował: Paweł K** 🛠️
+
+---
+
+## 🚀 Szybki Start
+
+### Online
+Otwórz w przeglądarce: https://caprianopl.github.io/LPC/
+
+### Lokalnie
+Pobierz plik `index.html` i otwórz w dowolnej przeglądarce na komputerze lub smartfonie.
+
 ---
 
 ## 🔥 Kluczowe Funkcje & Ergonomia (User-Friendly)
@@ -16,16 +28,6 @@ Aplikacja działa w 100% lokalnie w przeglądarce (nie wymaga serwera ani bazy d
 *   **Szybka Edycja Wpisów:** W zakładce "Zestawienie" możesz poprawić nazwę maszyny, opis wykonanej pracy oraz dane części bez konieczności usuwania i wpisywania wszystkiego od nowa.
 *   **Automatyczne Sumowanie:** System na bieżąco generuje globalną listę zbiorczą wszystkich zużytych w ciągu dnia części (idealne do szybkiego zdania raportu lub pobrania z magazynu).
 *   **Eksport do Pliku:** Możliwość pobrania całego dziennego raportu do czystego pliku `.TXT` jednym kliknięciem.
-
----
-
-## 🚀 Jak uruchomić?
-
-Aplikacja nie wymaga żadnej instalacji, kompilacji ani konfiguracji środowiska.
-
-1. Pobierz plik `index.html`.
-2. Otwórz go w dowolnej przeglądarce na komputerze lub smartfonie.
-3. *Wskazówka mobilna:* Możesz dodać skrót do pliku na ekranie głównym swojego telefonu, aby korzystać z aplikacji jak ze zwykłej apki mobilnej.
 
 ---
 
